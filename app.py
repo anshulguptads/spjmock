@@ -183,47 +183,16 @@ if not st.session_state.questions:
         st.stop()
 
 # --- 2. Interview Loop ---
-if not st.session_state.done:
-    st.subheader(f"Question {st.session_state.q_idx + 1} of {len(st.session_state.questions)}")
-    q = st.session_state.questions[st.session_state.q_idx]
-    st.markdown(f"**{q}**")
+# ---- AUDIO RECORDING (streamlit-audiorecorder) ----
+st.markdown("### Record your answer:")
 
-    st.markdown("### Live Video Analytics")
-    webrtc_ctx = webrtc_streamer(
-        key=f"face-analytics-demo-{st.session_state.q_idx}",
-        mode=WebRtcMode.SENDRECV,
-        video_processor_factory=VideoProcessor,
-        media_stream_constraints={"video": True, "audio": False},
-        async_processing=True,
-    )
+audio_bytes = audiorecorder("Click to record your answer", "Recording...")
 
-    # Show the real-time result
-    if webrtc_ctx.state.playing and webrtc_ctx.video_processor:
-        face_found = webrtc_ctx.video_processor.face_found
-        centered = webrtc_ctx.video_processor.centered
-        st.info("Face detected. Centered." if (face_found and centered) else
-                "Face detected, but not centered." if face_found else
-                "No face detected or looking away.")
-    else:
-        st.info("Click 'Start' above to activate your webcam.")
+if audio_bytes is not None and len(audio_bytes) > 0:
+    st.audio(audio_bytes, format="audio/wav")
 
-    st.markdown("### Now record your answer:")
-
-    audio_bytes = audiorecorder("Click to record your answer", "Recording...")
-
-    #audio_bytes = st.audio_recorder("🎤 Record Your Answer", sample_rate=16000, key=f"recorder{st.session_state.q_idx}")
-
-    if audio_bytes and st.button("Submit Answer", key=f"submit{st.session_state.q_idx}"):
-        st.audio(audio_bytes, format="audio/wav")
-
-        # Capture current video analytics (face/camera)
-        face_found = False
-        centered = False
-        if webrtc_ctx.state.playing and webrtc_ctx.video_processor:
-            face_found = webrtc_ctx.video_processor.face_found
-            centered = webrtc_ctx.video_processor.centered
-
-        # 1. Transcribe
+    if st.button("Submit Answer", key=f"submit{st.session_state.q_idx}"):
+        # Save the audio as a temp file for Whisper
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio:
             temp_audio.write(audio_bytes)
             temp_audio.flush()
@@ -238,6 +207,10 @@ if not st.session_state.done:
             audio_file.close()
         st.markdown("**Transcript:**")
         st.info(transcript)
+
+        # --- Analytics, feedback, and metrics (as before) ---
+        # (Insert your analytics/feedback code here, unchanged)
+
 
         # --- Analytics ---
         analytics = analyze_transcript(transcript)
