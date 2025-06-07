@@ -5,7 +5,8 @@ import av
 import cv2
 #import mediapipe as mp
 import numpy as np
-from streamlit_audiorecorder import audiorecorder
+#from streamlit_audiorecorder import audiorecorder
+from audiorecorder import audiorecorder
 import openai
 import requests
 import tempfile
