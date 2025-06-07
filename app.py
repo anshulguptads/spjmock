@@ -29,42 +29,41 @@ st.title("SPJMock: JD-Aware AI Interview Coach")
 # --- Live Webcam Analytics Setup ---
 mp_face_detection = mp.solutions.face_detection
 
+import cv2
+
 class VideoProcessor(VideoProcessorBase):
     def __init__(self):
-        self.mp_face_detection = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
+        # Load OpenCV's default face detector
+        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.centered = False
         self.face_found = False
 
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        results = self.mp_face_detection.process(img_rgb)
-        h, w, _ = img.shape
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        faces = self.face_cascade.detectMultiScale(gray, 1.1, 4)
+        h, w = img.shape[:2]
         self.face_found = False
         self.centered = False
 
-        if results.detections:
-            detection = results.detections[0]  # Use first face detected
-            bbox = detection.location_data.relative_bounding_box
-            x_min = int(bbox.xmin * w)
-            y_min = int(bbox.ymin * h)
-            bbox_w = int(bbox.width * w)
-            bbox_h = int(bbox.height * h)
-            center_x = x_min + bbox_w // 2
-            center_y = y_min + bbox_h // 2
+        for (x, y, fw, fh) in faces:
+            center_x = x + fw // 2
+            center_y = y + fh // 2
             img_center_x, img_center_y = w // 2, h // 2
             margin_x = w * 0.2
             margin_y = h * 0.2
             self.centered = (abs(center_x - img_center_x) < margin_x) and (abs(center_y - img_center_y) < margin_y)
             self.face_found = True
 
-            # Draw bounding box and status
-            box_color = (0, 255, 0) if self.centered else (0, 255, 255)
-            cv2.rectangle(img, (x_min, y_min), (x_min + bbox_w, y_min + bbox_h), box_color, 2)
+            color = (0, 255, 0) if self.centered else (0, 255, 255)
+            cv2.rectangle(img, (x, y), (x + fw, y + fh), color, 2)
             label = "Centered" if self.centered else "Not Centered"
-            cv2.putText(img, label, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, box_color, 2)
-        else:
+            cv2.putText(img, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+            break  # Only consider first detected face
+
+        if not self.face_found:
             cv2.putText(img, "No Face Detected", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 0, 255), 3)
+
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 # --- SESSION STATE ---
