@@ -12,7 +12,7 @@ import PyPDF2
 import re
 import pandas as pd
 from textblob import TextBlob
-from weasyprint import HTML
+# from weasyprint import HTML   # <-- COMMENT OUT/REMOVE FOR CLOUD
 import base64
 
 # --- CONFIG ---
@@ -27,9 +27,6 @@ st.image("static/spjlogo.png", width=220)
 st.title("SPJMock: JD-Aware AI Interview Coach")
 
 # --- Live Webcam Analytics Setup ---
-mp_face_detection = mp.solutions.face_detection
-
-import cv2
 
 class VideoProcessor(VideoProcessorBase):
     def __init__(self):
@@ -140,18 +137,6 @@ def analyze_transcript(text):
         "Sentiment": sentiment_label,
         "Sentiment score": round(sentiment, 2)
     }
-
-def analytics_to_html(df, summary):
-    html = "<h1>SPJMock Interview Report</h1>"
-    html += "<h2>Summary</h2>"
-    html += f"<p>{summary}</p>"
-    html += "<h2>Interview Details</h2>"
-    html += "<table border='1' cellspacing='0' cellpadding='3'>"
-    html += "<tr>" + "".join([f"<th>{col}</th>" for col in df.columns]) + "</tr>"
-    for _, row in df.iterrows():
-        html += "<tr>" + "".join([f"<td>{row[col]}</td>" for col in df.columns]) + "</tr>"
-    html += "</table>"
-    return html
 
 # --- 1. JD Upload/Questions ---
 if not st.session_state.questions:
@@ -352,11 +337,4 @@ else:
     })
     st.download_button("Download your interview report (CSV)", df.to_csv(index=False), file_name="interview_report.csv")
 
-    # --- Download as PDF ---
-    html_report = analytics_to_html(df, st.session_state.summary)
-    pdf_bytes = HTML(string=html_report).write_pdf()
-    b64_pdf = base64.b64encode(pdf_bytes).decode()
-    href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="interview_report.pdf">Download your interview report (PDF)</a>'
-    st.markdown(href, unsafe_allow_html=True)
-
-st.caption("Powered by OpenAI GPT-4o, Whisper, ElevenLabs TTS, Streamlit UI, MediaPipe, and streamlit-webrtc. © SP Jain School of Global Management  ")
+st.caption("Powered by OpenAI GPT-4o, Whisper, ElevenLabs TTS, Streamlit UI, OpenCV, and streamlit-webrtc. © SP Jain School of Global Management  ")
