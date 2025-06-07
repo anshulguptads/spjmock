@@ -6,3 +6,4 @@ PyPDF2
 pandas
 textblob
 opencv-python-headless
+streamlit-audiorecorder
