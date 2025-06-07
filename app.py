@@ -359,4 +359,4 @@ else:
     href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="interview_report.pdf">Download your interview report (PDF)</a>'
     st.markdown(href, unsafe_allow_html=True)
 
-st.caption("Powered by OpenAI GPT-4o, Whisper, ElevenLabs TTS, Streamlit UI, MediaPipe, and streamlit-webrtc. © SP Jain School of Global Management")
+st.caption("Powered by OpenAI GPT-4o, Whisper, ElevenLabs TTS, Streamlit UI, MediaPipe, and streamlit-webrtc. © SP Jain School of Global Management  ")
