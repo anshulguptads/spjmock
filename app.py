@@ -143,6 +143,7 @@ Questions:"""
     # Return only first 5 if extra
     return questions[:5]
 
+
 def analyze_transcript(text):
     words = text.split()
     num_words = len(words)
