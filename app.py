@@ -94,30 +94,54 @@ def extract_jd_text(uploaded_file):
     else:
         return uploaded_file.read().decode("utf-8")
 
-def generate_questions_from_jd(jd_text, n_questions=6):
+def generate_questions_from_jd(jd_text, n_questions=7):
     prompt = (
-        "Given the following job description, generate " +
-        f"{n_questions} specific, high-quality, non-generic, role- and company-relevant interview questions. "
-        "Do NOT ask generic questions like 'Tell me about yourself' or 'Why do you want this job.' "
-        "Focus on domain knowledge, role requirements, technical/functional skills, and fit.\n\n"
-        f"Job Description:\n{jd_text}\n\n"
-        "Questions:"
+        f"""Given the following job description, generate at least 5 specific, high-quality, non-generic, role- and company-relevant interview questions.
+If you cannot generate 5 targeted questions, rephrase or vary questions as needed to ensure you return 5.
+Output ONLY the questions, numbered 1. to 5., one per line, with no explanations, greetings, or extra text.
+
+Job Description:
+{jd_text}
+
+Questions:"""
     )
     chat_resp = openai.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     )
     raw_questions = chat_resp.choices[0].message.content
+
+    # Parse numbered lines: 1. ... 2. ... 3. ...
     questions = []
     for line in raw_questions.split("\n"):
         line = line.strip()
-        if re.match(r"^\d+\.", line):
+        if line and (line[0].isdigit() and '.' in line[:3]):
             q = line.split(".", 1)[1].strip()
             if len(q) > 10:
                 questions.append(q)
-        elif line and not questions:
-            questions.append(line)
-    return questions[:7] if len(questions) >= 5 else questions
+    # If less than 5, try again ONCE (rare case, but can help)
+    if len(questions) < 5:
+        # Retry with slightly stronger instruction
+        prompt2 = (
+            f"""IMPORTANT: Return exactly 5 interview questions. If needed, repeat or rephrase to make 5. Output only numbered questions (1. ... 2. ...).
+Job Description:
+{jd_text}
+Questions:"""
+        )
+        chat_resp2 = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt2}]
+        )
+        raw_questions2 = chat_resp2.choices[0].message.content
+        questions = []
+        for line in raw_questions2.split("\n"):
+            line = line.strip()
+            if line and (line[0].isdigit() and '.' in line[:3]):
+                q = line.split(".", 1)[1].strip()
+                if len(q) > 10:
+                    questions.append(q)
+    # Return only first 5 if extra
+    return questions[:5]
 
 def analyze_transcript(text):
     words = text.split()
