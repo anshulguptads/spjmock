@@ -5,6 +5,7 @@ import av
 import cv2
 #import mediapipe as mp
 import numpy as np
+from streamlit_audiorecorder import audiorecorder
 import openai
 import requests
 import tempfile
@@ -14,6 +15,7 @@ import pandas as pd
 from textblob import TextBlob
 # from weasyprint import HTML   # <-- COMMENT OUT/REMOVE FOR CLOUD
 import base64
+
 
 # --- CONFIG ---
 st.set_page_config(page_title="SPJMock AI Interview", page_icon=":microphone:")
@@ -207,7 +209,9 @@ if not st.session_state.done:
 
     st.markdown("### Now record your answer:")
 
-    audio_bytes = st.audio_recorder("🎤 Record Your Answer", sample_rate=16000, key=f"recorder{st.session_state.q_idx}")
+    audio_bytes = audiorecorder("Click to record your answer", "Recording...")
+
+    #audio_bytes = st.audio_recorder("🎤 Record Your Answer", sample_rate=16000, key=f"recorder{st.session_state.q_idx}")
 
     if audio_bytes and st.button("Submit Answer", key=f"submit{st.session_state.q_idx}"):
         st.audio(audio_bytes, format="audio/wav")
