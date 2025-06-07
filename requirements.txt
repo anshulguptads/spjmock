@@ -1,6 +1,5 @@
 streamlit
 streamlit-webrtc
-opencv-python
 openai
 requests
 PyPDF2
