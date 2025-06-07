@@ -5,5 +5,4 @@ requests
 PyPDF2
 pandas
 textblob
-weasyprint
 opencv-python-headless
