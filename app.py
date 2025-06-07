@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode
-from streamlit_audiorecorder import audiorecorder
+#from streamlit_audiorecorder import audiorecorder
+from audiorecorder import audiorecorder
 import openai
 import tempfile
 import os
