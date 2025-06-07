@@ -1,0 +1,10 @@
+streamlit
+streamlit-webrtc
+mediapipe
+opencv-python
+openai
+requests
+PyPDF2
+pandas
+textblob
+weasyprint
